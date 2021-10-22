@@ -1,0 +1,79 @@
+login/pw:
+	level00 : level00
+
+user info:
+	id
+		=> uid=2000(level00) gid=2000(level00) groups=2000(level00),100(users)
+	pwd
+		=> /home/user/level00
+	ls -la
+		=> Nothing
+
+sudo:
+	sudo -l
+		=> Sorry, user level00 may not run sudo on SnowCrash.
+
+suid/guid/sticky bit:
+	find / -type f -perm -4000 -exec ls -l {} \; 2> /dev/null
+		=> Tried exploiting /usr/bin/at: Nothing came out
+	find / -type f -perm -2000 -exec ls -l {} \; 2> /dev/null
+		=> Nothing
+	find / -type f -perm -1000 -exec ls -l {} \; 2> /dev/null
+		=> Nothing
+
+cron:
+	ls -lR /etc/cron*
+		=> Nothing
+	ls -lR /var/spool/cron
+		=> Nothing
+
+capabilities:
+	getcap -r /
+		=> Command not found
+
+file upload:
+	scp -P 4242 linpeas.sh level00@[IP]:/home/user/level00
+		=> scp: /home/user/level00/linpeas.sh: Permission denied
+		=> I dont even have write perm on my own directory, that's weird
+
+level00 files:
+	find / -user level00 2> /dev/null
+		=> Only processes
+
+write/exec perm:
+	find / -type f -perm -003 2> /dev/null
+		=> Nothing
+	find / -type f -perm -030 -group users 2> /dev/null
+		=> Nothing
+
+directory write/exec perm:
+	find / -perm -030 -group users 2> /dev/null
+		=> Nothing
+
+RESOLUTION:
+	At this point I was confused as I can literally do nothing on this computer
+		=> I have 0 rights, 0 files, nothing
+	What about flag00 user?
+		find / -type f -user flag00 -exec ls -l {} \; 2> /dev/null
+			=>	----r--r-- 1 flag00 flag00 15 Mar  5  2016 /usr/sbin/john
+				----r--r-- 1 flag00 flag00 15 Mar  5  2016 /rofs/usr/sbin/john
+	Read permission
+		cat /usr/sbin/john
+			=> cdiiddwpgswtgt
+		su flag00
+			pw: cdiiddwpgswtgt
+				=> su: Authentication failure
+	Encoded:
+		dcode - cryptographie:
+			Cipher identifier:
+				1. affine cipher
+					=> nottoohardhere
+				2. rot cipher
+					=> NOTTOOHARDHERE
+				3. caesar cipher
+					=> nottoohardhere
+				4+. Nothing
+	su flag00
+		=> pw: nottoohardhere
+	getflag
+		=> Check flag.Here is your token : x24ti5gi3x0ol2eh4esiuxias

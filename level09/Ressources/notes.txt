@@ -1,0 +1,35 @@
+login/pw:
+	level09 : 25749xKZ8L7DkSCwJkT9dyv6f
+
+RESOLUTION:
+	ls -l
+		=> ----r--r-- 1 flag09 level09   26 Mar  5  2016 token
+			=> We can read it but it makes no sense
+		=> -rwsr-sr-x 1 flag09 level09 7640 Mar  5  2016 level09
+			=> SUID flag09
+				=> Reverse Engineering
+	scp -P 4242 level09@192.168.1.23:~/level09 .
+	scp -P 4242 level09@192.168.1.23:~/token .
+	bash script.sh
+		=> New project
+			=> Analyze /level09
+				If we look at the source code, we realize that is there is 1 arg, we have a goto
+	Let s extract this source code to see what it does precisely
+		=> encode.c
+			=> This is a human readable reproduction of level09 important part
+			=> By rewriting it, I realized that it increments the char value by the position in the str av[1]
+	token
+		=> Looking at the file content, it makes no sense, probably encrypted
+			=> My guess is level09 was used to encrypt it
+			=> Lets reverse the process
+	decode.c
+		chmod 644 token
+		gcc decode.c
+		./a.out
+			=> f3iji1ju5yuevaus41q1afiuq	
+
+	su flag09
+		=> f3iji1ju5yuevaus41q1afiuq
+
+	getflag
+		=> Check flag.Here is your token : s5cAJpM8ev6XHw998pRWG728z

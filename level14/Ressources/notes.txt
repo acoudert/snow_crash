@@ -1,0 +1,41 @@
+login/pw:
+	level14 : 2A31L79asukciNyi8uppkEuSx
+
+I spent so much time trying to figure out what we had to do.
+Nothing prove to be useful, from analyzing my everyrights on the system to analyzing the entire file system.
+	=> Ended up using linpeas.sh to find out something
+	=> Still nothing
+
+Then I remembered level00 where I spent that much time
+I remembered something that I tried that gave an unexpected result
+	=> gdb /bin/getflag
+		run
+			=> You should not reverse this
+The funny thing is that it was also present in level09 and I successfully reversed it
+
+RESOLUTION:
+	scp -P 4242 level14@192.168.1.23:/bin/getflag .
+	bash script.sh
+		=> Set up analyze as usual
+		=> Then I saw so many interesting lines such as:
+			=> fwrite("Check flag.Here is your token : ",1,0x20,stdout)
+			=> pcVar4 = (char *)ft_des("H8B8h_20B4J43><8>\\ED<;j@3")
+			=> pcVar4 = (char *)ft_des("bci`mC{)jxkn<\"uD~6%g7FK`7")
+			=> pcVar4 = (char *)ft_des("8_Dw\"4#?+3i]q&;p6 gtw88EC")
+				=> etc etc
+		=> All of those lines are based on condition where getuid is checked
+	gcc main.c
+	cat /ect/passwd
+		=> flag14:x:3014:3014::/home/flag/flag14:/bin/bash
+			=> uid == 3014
+	test with first found
+		./a.out "H8B8h_20B4J43><8>\\ED<;j@3"
+			=> wiok45aaoguiboiki2tuin6ub
+				=> Correct flag
+			=> Checked: uid == 0xbbe == 3006 == flag06 uid
+	Hex to dec:
+		3014 == 0xbc6
+	Corresponding encoded flag:
+		=> "g <t61:|4_|!@IF.-62FH&G~DCK/Ekrvvdwz?v|"
+	./a.out 'g <t61:|4_|!@IF.-62FH&G~DCK/Ekrvvdwz?v|'
+		=> Check flag.Here is your token : 7QiHafiNa3HVozsaXkawuYrTstxbpABHD8CPnHJ

